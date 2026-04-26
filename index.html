@@ -538,6 +538,53 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // -- Fetch ---------------------------------------------------------------------
+
+// Normalise field names from Google Sheets (long headers) to dashboard keys
+function normaliseRow(r) {
+  return {
+    ts:       r.ts        || r.timestamp,
+    acct:     String(r.acct || ''),
+    sym:      String(r.sym  || r.symbol || ''),
+    magic:    r.magic,
+    bid:      r.bid,
+    bal:      r.bal       || r.balance,
+    eq:       r.eq        || r.equity,
+    fp:       r.fp        || r.float,
+    dd:       r.dd,
+    daily:    r.daily,
+    sess:     r.sess,
+    wins:     r.wins,
+    losses:   r.losses,
+    wr:       r.wr        || r.winrate,
+    htf:      r.htf,
+    bias:     r.bias,
+    vol:      r.vol,
+    atr:      r.atr,
+    basket:   r.basket,
+    bpeak:    r.bpeak,
+    riskoff:  r.riskoff,
+    recov:    r.recov     || r.recovery,
+    locked:   r.locked,
+    news:     r.news,
+    ml_on:    r.ml_on,
+    ml_n:     r.ml_n,
+    ml_bull:  r.ml_bull,
+    ml_bear:  r.ml_bear,
+    lot:      r.lot,
+    lot_auto: r.lot_auto,
+    lot_next: r.lot_next,
+    anchor:   r.anchor,
+    pos:      r.pos       || r.positions,
+    heat_s:   r.heat_s,
+    heat_b:   r.heat_b,
+    dna:      r.dna,
+    as:       r.as        || r.sess_asian,
+    lo:       r.lo        || r.sess_london,
+    ny:       r.ny        || r.sess_ny,
+    ro:       r.ro        || r.sess_rollover,
+  };
+}
+
 async function fetchData() {
   const url = localStorage.getItem(SHEET_URL_KEY);
   if (!url) {
@@ -548,7 +595,7 @@ async function fetchData() {
   try {
     const res = await fetch(url);
     const data = await res.json();
-    allData = Array.isArray(data) ? data : [];
+    allData = Array.isArray(data) ? data.map(normaliseRow) : [];
 
     if (allData.length === 0) {
       document.getElementById('no-data').style.display = 'block';
