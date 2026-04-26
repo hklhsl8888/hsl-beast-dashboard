@@ -579,7 +579,8 @@ async function fetchData() {
 
 // -- Tabs ----------------------------------------------------------------------
 function rebuildTabs() {
-  const accts = [...new Set(allData.map(r => r.acct))];
+  const accts = [...new Set(allData.map(r => String(r.acct || r.symbol || 'unknown')))]
+    .filter(a => a !== 'unknown' && a !== 'acct');
   const acctDiv = document.getElementById('acct-tabs');
   acctDiv.innerHTML = '';
 
@@ -587,8 +588,8 @@ function rebuildTabs() {
 
   accts.forEach(acct => {
     const tab = document.createElement('div');
-    tab.className = 'acct-tab' + (acct == selectedAcct ? ' active' : '');
-    tab.textContent = 'Acct: ' + acct;
+    tab.className = 'acct-tab' + (String(acct) == String(selectedAcct) ? ' active' : '');
+    tab.textContent = 'Acct: ' + acct; tab.dataset.acct = acct;
     tab.onclick = () => { selectedAcct = acct; rebuildTabs(); buildAssetTabs(); };
     acctDiv.appendChild(tab);
   });
@@ -597,19 +598,19 @@ function rebuildTabs() {
 }
 
 function buildAssetTabs() {
-  const assets = allData.filter(r => r.acct == selectedAcct);
+  const assets = allData.filter(r => String(r.acct) == String(selectedAcct));
   const assetDiv = document.getElementById('asset-tabs');
   assetDiv.innerHTML = '';
 
-  if (!selectedAsset || !assets.find(r => r.sym === selectedAsset))
-    selectedAsset = assets[0]?.sym;
+  if (!selectedAsset || !assets.find(r => String(r.sym||r.symbol) === String(selectedAsset)))
+    selectedAsset = String(assets[0]?.sym || assets[0]?.symbol || '');
 
   assets.forEach(r => {
     const tab = document.createElement('div');
     const type = getEAType(r.sym);
-    tab.className = 'asset-tab' + (r.sym === selectedAsset ? ` active-${type}` : '');
-    tab.textContent = r.sym;
-    tab.onclick = () => { selectedAsset = r.sym; buildAssetTabs(); updateDashboard(); };
+    tab.className = 'asset-tab' + (String(r.sym||r.symbol) === String(selectedAsset) ? ` active-\${type}` : '');
+    tab.textContent = String(r.sym||r.symbol||'?');
+    tab.onclick = () => { selectedAsset = String(r.sym||r.symbol); buildAssetTabs(); updateDashboard(); };
     assetDiv.appendChild(tab);
   });
 
@@ -618,10 +619,12 @@ function buildAssetTabs() {
 
 function getEAType(sym) {
   if (!sym) return 'crypto';
-  if (sym.includes('XAU') || sym.includes('SILVER')) return 'xau';
-  if (sym.includes('BTC') || sym.includes('ETH') || sym.includes('XRP') ||
-      sym.includes('SOL') || sym.includes('ADA') || sym.includes('LTC') ||
-      sym.includes('DOGE') || sym.includes('LINK')) return 'crypto';
+  var s = String(sym).toUpperCase();
+  if (s.includes('XAU') || s.includes('SILVER') || s.includes('GOLD')) return 'xau';
+  if (s.includes('BTC') || s.includes('ETH') || s.includes('XRP') ||
+      s.includes('SOL') || s.includes('ADA') || s.includes('LTC') ||
+      s.includes('DOGE') || s.includes('LINK') || s.includes('DOT') ||
+      s.includes('BCH') || s.includes('EOS')) return 'crypto';
   return 'indices';
 }
 
@@ -648,7 +651,8 @@ function updatePortfolio() {
 
 // -- Main Dashboard Update -----------------------------------------------------
 function updateDashboard() {
-  const r = allData.find(d => d.acct == selectedAcct && d.sym === selectedAsset);
+  const r = allData.find(d => String(d.acct) == String(selectedAcct) && String(d.sym || d.symbol) === String(selectedAsset));
+  if (r && !r.sym) r.sym = r.symbol; // normalise field name
   if (!r) return;
 
   const type = getEAType(r.sym);
