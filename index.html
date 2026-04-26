@@ -508,7 +508,7 @@
 </div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
+// -- State ---------------------------------------------------------------------
 let allData = [];
 let selectedAcct = null;
 let selectedAsset = null;
@@ -516,7 +516,7 @@ let eqHistory = [];
 let refreshInterval = null;
 const SHEET_URL_KEY = 'hsl_sheet_url';
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// -- Config --------------------------------------------------------------------
 function saveConfig() {
   const url = document.getElementById('sheet-url').value.trim();
   localStorage.setItem(SHEET_URL_KEY, url);
@@ -528,7 +528,7 @@ function loadConfig() {
   if (saved) document.getElementById('sheet-url').value = saved;
 }
 
-// ── Clock ─────────────────────────────────────────────────────────────────────
+// -- Clock ---------------------------------------------------------------------
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
@@ -537,9 +537,9 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
+// -- Fetch ---------------------------------------------------------------------
 async function fetchData() {
-  const url = localStorage.getItem(https://script.google.com/macros/s/AKfycbwpsDFE3v1-psX-tTp1We5ZEH4MGsJsgAMkdkBqrFBPgNZtlG1lAfElp4igJ1ApHg5BIA/exec);
+  const url = localStorage.getItem(SHEET_URL_KEY);
   if (!url) {
     document.getElementById('last-update').textContent = 'No URL configured';
     return;
@@ -577,7 +577,7 @@ async function fetchData() {
   }
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
+// -- Tabs ----------------------------------------------------------------------
 function rebuildTabs() {
   const accts = [...new Set(allData.map(r => r.acct))];
   const acctDiv = document.getElementById('acct-tabs');
@@ -625,7 +625,7 @@ function getEAType(sym) {
   return 'indices';
 }
 
-// ── Portfolio Summary ─────────────────────────────────────────────────────────
+// -- Portfolio Summary ---------------------------------------------------------
 function updatePortfolio() {
   const acctData = allData.filter(r => r.acct == selectedAcct);
   const totBal  = acctData.reduce((s,r) => s + parseFloat(r.bal||0), 0);
@@ -646,14 +646,14 @@ function updatePortfolio() {
   document.getElementById('pf-daily').className = 'pf-value ' + (totD >= 0 ? 'bull' : 'bear');
 }
 
-// ── Main Dashboard Update ─────────────────────────────────────────────────────
+// -- Main Dashboard Update -----------------------------------------------------
 function updateDashboard() {
   const r = allData.find(d => d.acct == selectedAcct && d.sym === selectedAsset);
   if (!r) return;
 
   const type = getEAType(r.sym);
   const accentColor = type==='xau' ? 'var(--gold)' : type==='crypto' ? 'var(--cyan)' : 'var(--purple)';
-  const icon = type==='xau' ? '🐂' : type==='crypto' ? '🪙' : '📊';
+  const icon = type==='xau' ? '?' : type==='crypto' ? '?' : '?';
   const ver  = type==='xau' ? 'XAU BEAST v4.2' : type==='crypto' ? 'CRYPTO BEAST v2.2' : 'INDICES BEAST v3.2';
 
   // Header
@@ -714,7 +714,7 @@ function updateDashboard() {
   document.getElementById('regime-conf').textContent = conf + '% confidence';
   document.getElementById('regime-fill').style.width = conf + '%';
   document.getElementById('regime-fill').style.background = vol===2?'var(--red)':vol===1?'var(--cyan)':'#fbbf24';
-  document.getElementById('regime-suit').textContent = vol===2?'CAUTION ⚠':vol===1?'GOOD ✓':'EXCELLENT ✓';
+  document.getElementById('regime-suit').textContent = vol===2?'CAUTION ?':vol===1?'GOOD OK':'EXCELLENT OK';
   document.getElementById('regime-suit').className   = vol===2?'bear':vol===1?'cyan':'bull';
 
   // Flow
@@ -740,7 +740,7 @@ function updateDashboard() {
   document.getElementById('al-eq').textContent   = '$' + eq.toFixed(2);
   document.getElementById('al-next').textContent = nextStep>0?'$'+nextStep.toFixed(2):'N/A';
   const dist = nextStep>eq?nextStep-eq:0;
-  document.getElementById('al-dist').textContent = dist>0?'+$'+dist.toFixed(2):'—';
+  document.getElementById('al-dist').textContent = dist>0?'+$'+dist.toFixed(2):'?';
   const alProg = nextStep>0&&dist>0 ? Math.max(0,100-dist/nextStep*100) : (lotAuto?100:0);
   document.getElementById('al-fill').style.width = alProg + '%';
 
@@ -748,7 +748,7 @@ function updateDashboard() {
   buildDNA(r.dna||'', parseInt(r.wins||0), parseInt(r.losses||0));
 
   // Right panel
-  document.getElementById('rp-trend').textContent = htf>0?'▲ BULLISH':htf<0?'▼ BEARISH':'◆ NEUTRAL';
+  document.getElementById('rp-trend').textContent = htf>0?'^ BULLISH':htf<0?'v BEARISH':'* NEUTRAL';
   document.getElementById('rp-trend').className   = 'rp-value ' + (htf>0?'bull':htf<0?'bear':'neut');
   document.getElementById('rp-bias').textContent  = bias>0?'LONG BIAS':bias<0?'SHORT BIAS':'NEUTRAL';
   document.getElementById('rp-bias').className    = 'rp-value ' + (bias>0?'bull':bias<0?'bear':'neut');
@@ -786,7 +786,7 @@ function updateDashboard() {
   document.getElementById('sys-ts').textContent    = 'now';
 }
 
-// ── Sparkline ─────────────────────────────────────────────────────────────────
+// -- Sparkline -----------------------------------------------------------------
 function drawSparkline(data, canvasId, type) {
   const canvas = document.getElementById(canvasId);
   if (!canvas || data.length < 2) return;
@@ -830,7 +830,7 @@ function drawSparkline(data, canvasId, type) {
   ctx.fill();
 }
 
-// ── Session Waterfall ─────────────────────────────────────────────────────────
+// -- Session Waterfall ---------------------------------------------------------
 function buildWaterfall(asian, london, ny, rollover) {
   const sessions = [
     {label:'Asian',  val:asian,    color:'asian'},
@@ -854,7 +854,7 @@ function buildWaterfall(asian, london, ny, rollover) {
   });
 }
 
-// ── Heat Map ──────────────────────────────────────────────────────────────────
+// -- Heat Map ------------------------------------------------------------------
 function buildHeatMap(heatSell, heatBuy) {
   ['heat-sell','heat-buy'].forEach((id, idx) => {
     const heat = idx===0?heatSell:heatBuy;
@@ -871,7 +871,7 @@ function buildHeatMap(heatSell, heatBuy) {
   });
 }
 
-// ── Basket Ring ───────────────────────────────────────────────────────────────
+// -- Basket Ring ---------------------------------------------------------------
 function updateRing(pct, fp, armed, peak) {
   const circ = 163.4;
   const offset = circ - (pct/100)*circ;
@@ -881,12 +881,12 @@ function updateRing(pct, fp, armed, peak) {
   document.getElementById('ring-pct').className  = pct>80?'ring-pct bull':pct>50?'ring-pct neut':'ring-pct muted';
   document.getElementById('ring-fp').textContent  = fmtPnl(fp);
   document.getElementById('ring-fp').className   = fp>=0?'bull':'bear';
-  document.getElementById('ring-armed').textContent = armed?'YES ⚡':'No';
+  document.getElementById('ring-armed').textContent = armed?'YES ?':'No';
   document.getElementById('ring-armed').className   = armed?'bull':'muted';
   document.getElementById('ring-peak').textContent  = '$'+peak.toFixed(2);
 }
 
-// ── Trade DNA ─────────────────────────────────────────────────────────────────
+// -- Trade DNA -----------------------------------------------------------------
 function buildDNA(dna, wins, losses) {
   const div = document.getElementById('dna-dots');
   div.innerHTML = '';
@@ -899,7 +899,7 @@ function buildDNA(dna, wins, losses) {
     else if(ch==='S'){dot.className='dna-dot SW'+(isLast?' cur':'');dot.textContent='S+';sw++;}
     else if(ch==='b'){dot.className='dna-dot BL'+(isLast?' cur':'');dot.textContent='B-';bl++;}
     else if(ch==='s'){dot.className='dna-dot SL'+(isLast?' cur':'');dot.textContent='S-';sl++;}
-    else             {dot.className='dna-dot NA';dot.textContent='·';}
+    else             {dot.className='dna-dot NA';dot.textContent='?';}
     div.appendChild(dot);
   }
   const wr = (wins+losses)>0?wins/(wins+losses)*100:0;
@@ -910,7 +910,7 @@ function buildDNA(dna, wins, losses) {
   document.getElementById('dna-sell-wl').textContent = sw+'W / '+sl+'L';
 }
 
-// ── Signal Bar ────────────────────────────────────────────────────────────────
+// -- Signal Bar ----------------------------------------------------------------
 function buildSignalBar(score) {
   const div = document.getElementById('rp-signal');
   div.innerHTML = '';
@@ -923,7 +923,7 @@ function buildSignalBar(score) {
   }
 }
 
-// ── Protections ───────────────────────────────────────────────────────────────
+// -- Protections ---------------------------------------------------------------
 function buildFilters(r) {
   const filters = [
     {name:'News Filter',   on: true},
@@ -949,19 +949,19 @@ function buildFilters(r) {
   document.getElementById('rp-news').textContent = r.news==='1'?'BLOCKED':'Clear';
 }
 
-// ── Utils ─────────────────────────────────────────────────────────────────────
+// -- Utils ---------------------------------------------------------------------
 function fmtPnl(v) {
   const n = parseFloat(v||0);
   return (n>=0?'+':'') + '$' + Math.abs(n).toFixed(2);
 }
 
-// ── Auto refresh ──────────────────────────────────────────────────────────────
+// -- Auto refresh --------------------------------------------------------------
 function startRefresh() {
   if (refreshInterval) clearInterval(refreshInterval);
   refreshInterval = setInterval(fetchData, 5000);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// -- Init ----------------------------------------------------------------------
 loadConfig();
 fetchData();
 startRefresh();
