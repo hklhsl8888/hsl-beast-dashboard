@@ -506,7 +506,7 @@ function rebuildTabs() {
   inner.innerHTML = '';
   Object.entries(allAccounts).forEach(([key, d]) => {
     const bal    = parseFloat(d.bal || d.balance || 0);
-    const pnl    = parseFloat(d.day_pnl || d.dayPnl || 0);
+    const pnl    = parseFloat(d.day_pnl || d.dayPnl || d.pnl || 0);
     const state  = (d.state || 'HUNTING').toUpperCase();
     const name   = d.acct_name || d.acctName || d.acct || 'Account';
     const isLive = true;
@@ -553,7 +553,7 @@ function renderOverview() {
   grid.innerHTML = '';
   Object.entries(allAccounts).forEach(([key, d]) => {
     const bal  = parseFloat(d.bal || d.balance || 0);
-    const pnl  = parseFloat(d.day_pnl || d.dayPnl || 0);
+    const pnl  = parseFloat(d.day_pnl || d.dayPnl || d.pnl || 0);
     const wr   = parseFloat(d.wr || d.winrate || 0);
     const wins = parseInt(d.wins || 0);
     const loss = parseInt(d.losses || 0);
@@ -592,7 +592,7 @@ function renderOverview() {
 function renderAccount(d) {
   const bal    = parseFloat(d.bal    || d.balance || 0);
   const eq     = parseFloat(d.eq     || d.equity  || bal);
-  const pnl    = parseFloat(d.day_pnl|| d.dayPnl  || 0);
+  const pnl    = parseFloat(d.day_pnl || d.dayPnl || d.pnl || 0);
   const dayBal = parseFloat(d.day_bal|| d.dayBal   || bal);
   const netPnl = parseFloat(d.net_pnl|| d.netPnl   || pnl);
   const sesPnl = parseFloat(d.ses_pnl|| d.sesPnl   || 0);
@@ -662,11 +662,13 @@ function renderAccount(d) {
   setV2('kv-ses', fmtPnl(sesPnl), sesPnl>=0?'pos':'neg');
   setEl('kv-peak', fmt(peak));
   setV2('kv-dd', dd.toFixed(1)+'% / 20%', dd>10?'orange':'');
-  // Progress
-  setEl('pg-pct', ppct.toFixed(0)+'%');
-  setEl('pg-vals', fmtPnl(pnl)+' / $'+target.toFixed(2));
+  // Progress (dollar-based)
+  const dollarTarget=200;
+  const dollarPct=Math.min(Math.max(dayPnl,0)/dollarTarget*100,100);
+  setEl('pg-pct', fmtPnl(dayPnl));
+  setEl('pg-vals', '/ $'+dollarTarget+' target');
   const pgf = document.getElementById('pg-fill');
-  if(pgf){pgf.style.width=ppct+'%';pgf.style.background=ppct<33?'var(--red)':ppct<67?'linear-gradient(90deg,var(--gold2),var(--gold))':'linear-gradient(90deg,var(--green),#00ffaa)';}
+  if(pgf){pgf.style.width=dollarPct+'%';pgf.style.background=ppct<33?'var(--red)':ppct<67?'linear-gradient(90deg,var(--gold2),var(--gold))':'linear-gradient(90deg,var(--green),#00ffaa)';}
   setEl('vault-amt', fmt(vault));
   // DNA
   buildDNA(d.dna||'', wins, losses, lonT, nyT);
