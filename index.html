@@ -304,7 +304,7 @@ canvas.eq{width:100%;height:65px;display:block;}
       </div>
       <div class="prog-wrap">
         <div class="stitle" style="margin-bottom:8px;"><span class="ac">◆</span> Daily Target</div>
-        <div class="prog-hdr"><span id="pg-pct" style="color:var(--gold);">0%</span><span id="pg-vals" style="color:var(--muted);">$0 / $0</span></div>
+        <div class="prog-hdr"><span id="pg-pct" style="color:var(--gold);">$0.00</span><span id="pg-vals" style="color:var(--muted);">/ $200 target</span></div>
         <div class="prog-track"><div class="prog-fill" id="pg-fill" style="width:0%;background:linear-gradient(90deg,var(--gold2),var(--gold));"></div></div>
       </div>
       <div class="sec">
@@ -353,6 +353,7 @@ canvas.eq{width:100%;height:65px;display:block;}
       <div class="sec">
         <div class="stitle"><span class="ac">◆</span> Signal Engine</div>
         <div class="stag" id="stag">SCANNING...</div>
+        <div id="scan-live" style="font-size:11px;color:var(--gold);font-family:'JetBrains Mono',monospace;padding:4px 0;animation:pulse 2s infinite;">SCANNING...</div>
         <div class="sc-bar"><span class="sc-lbl" style="color:var(--green);">BULL</span><div class="sc-track"><div class="sc-fill-bull" id="bull-bar" style="width:0%"></div></div><span class="sc-num" id="bull-sc">0</span></div>
         <div class="sc-bar"><span class="sc-lbl" style="color:var(--red);">BEAR</span><div class="sc-track"><div class="sc-fill-bear" id="bear-bar" style="width:0%"></div></div><span class="sc-num" id="bear-sc">0</span></div>
         <div class="bias-row">
@@ -364,6 +365,8 @@ canvas.eq{width:100%;height:65px;display:block;}
         <div class="kv"><span class="kk">M30 Trend</span><span class="kval blue" id="kv-m30">—</span></div>
         <div class="kv"><span class="kk">TD Sequential</span><span class="kval gold" id="kv-td">—</span></div>
         <div class="kv"><span class="kk">Flip Score</span><span class="kval" id="kv-flip">0 / 6</span></div>
+        <div class="kv"><span class="kk">Trend Bias</span><span class="kval gold" id="kv-trend-bias">NEUTRAL</span></div>
+        <div class="kv"><span class="kk">ATR Lot Factor</span><span class="kval" id="kv-atr-lot">1.0×</span></div>
         <div class="kv"><span class="kk">Cooldown</span><span class="kval" id="kv-cd">—</span></div>
       </div>
       <div class="sec">
