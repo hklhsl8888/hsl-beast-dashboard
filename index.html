@@ -386,7 +386,7 @@ canvas.eq{width:100%;height:65px;display:block;}
         <div class="kv"><span class="kk">Regime</span><span class="kval" id="kv-reg">—</span></div>
         <div class="kv"><span class="kk">Volatility</span><span class="kval pos" id="kv-vol">NORMAL</span></div>
         <div class="kv"><span class="kk">Break Even</span><span class="kval" id="kv-be">—</span></div>
-        <div class="kv"><span class="kk">Mode</span><span class="kval gold" id="kv-mode">STANDARD</span></div>
+        <div class="kv"><span class="kk">Mode</span><span class="kval gold" id="kv-mode">24/5 ALL HOURS</span></div>
       </div>
       <div class="sec">
         <div class="stitle"><span class="ac">◆</span> System</div>
@@ -394,7 +394,7 @@ canvas.eq{width:100%;height:65px;display:block;}
         <div class="kv"><span class="kk">Preset</span><span class="kval gold" id="kv-preset">AUTO</span></div>
         <div class="kv"><span class="kk">Week Loss Days</span><span class="kval" id="kv-wkl">0 / 3</span></div>
         <div class="kv"><span class="kk">CSV Journal</span><span class="kval pos" id="kv-csv">RECORDING</span></div>
-        <div class="kv"><span class="kk">EA Version</span><span class="kval gold">v4.3</span></div>
+        <div class="kv"><span class="kk">EA Version</span><span class="kval gold" id="kv-ver">v4.9</span></div>
       </div>
     </div>
   </div>
@@ -605,7 +605,7 @@ function renderAccount(d) {
   const mart   = parseInt(d.mart_lvl || d.martLevel|| 0);
   const mmax   = parseInt(d.mart_max || d.martMax  || 6);
   const lot    = parseFloat(d.lot    || 0);
-  const spd    = parseFloat(d.spread || d.spread_base || 0);
+  const spd    = parseFloat(d.spread||0)>0 ? parseFloat(d.spread) : parseFloat(d.spread_base||0);
   const bull   = parseInt(d.bull_score||d.bullScore|| 0);
   const bear   = parseInt(d.bear_score||d.bearScore|| 0);
   const trades = parseInt(d.trades   || wins+losses);
@@ -707,8 +707,12 @@ function renderAccount(d) {
   setV2('kv-vol', vol.includes('PAUSED')?'PAUSED':'NORMAL', vol.includes('PAUSED')?'orange':'pos');
   setEl('kv-be', be>0?be.toFixed(1)+' pips':'— pips');
   setEl('kv-mode', mode||'STANDARD');
+  // EA version from magic number
+  const magic = String(d.magic||'');
+  const verStr = d.ea_ver || (magic.endsWith('490')?'v4.9':magic.endsWith('470')?'v4.7':'v4.9');
+  setEl('kv-ver', verStr);
   // System
-  setEl('kv-lotm', lotMode||d.lot_mode||'—'); setEl('kv-preset', preset);
+  setEl('kv-lotm', lotMode||d.lot_mode||'—'); setEl('kv-preset', preset||d.preset||'PRO');
   setEl('kv-wkl', wkl+' / 3');
   setV2('kv-csv', d.csv_on?'RECORDING':'OFF', d.csv_on?'pos':'');
   // Footer
@@ -754,7 +758,7 @@ function buildMart(level, max, lot) {
   }
   setEl('mart-lvl', level+' / '+max);
   setEl('mart-lot', lot>0?lot.toFixed(2):'—');
-  setEl('mart-stat', level>0?'ACTIVE — RECOVERING':'—');
+  setEl('mart-stat', level>0?'RECOVERING (Lvl '+level+')':'BASE LOT');
 }
 
 // ── CHART ─────────────────────────────────────────────────────────────────────
