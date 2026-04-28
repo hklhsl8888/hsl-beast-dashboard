@@ -484,6 +484,9 @@ async function fetchData() {
       });
       document.getElementById('no-accounts').style.display = 'none';
       rebuildTabs();
+      // Auto-select first account if none selected
+      const keys = Object.keys(allAccounts);
+      if (!activeAcct && keys.length > 0) selectAccount(keys[0]);
       if (viewMode === 'overview') renderOverview();
       else if (activeAcct && allAccounts[activeAcct]) renderAccount(allAccounts[activeAcct]);
       const count = Object.keys(allAccounts).length;
@@ -527,7 +530,7 @@ function rebuildTabs() {
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
 function showOverview() {
   viewMode = 'overview';
-  activeAcct = null;
+  // Don't clear activeAcct so it remembers when going back
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('overview-view').style.display = 'block';
   document.getElementById('account-view').style.display = 'none';
