@@ -559,7 +559,7 @@ function renderOverview() {
     const loss = parseInt(d.losses || 0);
     const pf   = parseFloat(d.pf || 0);
     const state= (d.state || 'HUNTING').toUpperCase();
-    const name = d.acct_name || d.acctName || d.acct || 'Account';
+    const name = (d.acct_name || d.acctName || d.acct || 'Account').trim();
     const pct  = parseFloat(d.day_pct || d.dayPct || 0);
     const card = document.createElement('div');
     card.className = 'ov-card';
@@ -605,7 +605,7 @@ function renderAccount(d) {
   const mart   = parseInt(d.mart_lvl || d.martLevel|| 0);
   const mmax   = parseInt(d.mart_max || d.martMax  || 6);
   const lot    = parseFloat(d.lot    || 0);
-  const spd    = parseFloat(d.spread || 0);
+  const spd    = parseFloat(d.spread || d.spread_base || 0);
   const bull   = parseInt(d.bull_score||d.bullScore|| 0);
   const bear   = parseInt(d.bear_score||d.bearScore|| 0);
   const trades = parseInt(d.trades   || wins+losses);
@@ -619,7 +619,7 @@ function renderAccount(d) {
   const cd     = parseInt(d.cooldown  || 0);
   const wkl    = parseInt(d.wk_loss   || d.wkLoss  || 0);
   const regime = d.regime   || '—';
-  const vol    = d.vol_status|| d.volStatus || 'NORMAL';
+  const vol    = d.vol_status || d.volStatus || d.volatility || 'NORMAL';
   const be     = parseFloat(d.be_pips || d.bePips  || 0);
   const pct    = dayBal > 0 ? pnl/dayBal*100 : 0;
   const wr     = (wins+losses) > 0 ? wins/(wins+losses)*100 : 0;
@@ -702,13 +702,13 @@ function renderAccount(d) {
   ['london','overlap','ny','asian'].forEach(id=>{document.getElementById('sp-'+id).className='sp';});
   const smap={'LONDON':'london','OVERLAP':'overlap','NEW YORK':'ny','ASIAN':'asian'};
   if(smap[sess]){const el=document.getElementById('sp-'+smap[sess]);if(el)el.className='sp active';}
-  setEl('kv-spd', spd.toFixed(1)+' pips');
-  setV2('kv-reg', regime, regime==='TRENDING'?'pos':'');
+  setEl('kv-spd', spd>0?spd.toFixed(1)+' pips':'— pips');
+  setV2('kv-reg', regime||'—', regime==='TRENDING'?'pos':'');
   setV2('kv-vol', vol.includes('PAUSED')?'PAUSED':'NORMAL', vol.includes('PAUSED')?'orange':'pos');
-  setEl('kv-be', be.toFixed(1)+' pips');
-  setEl('kv-mode', mode);
+  setEl('kv-be', be>0?be.toFixed(1)+' pips':'— pips');
+  setEl('kv-mode', mode||'STANDARD');
   // System
-  setEl('kv-lotm', lotMode); setEl('kv-preset', preset);
+  setEl('kv-lotm', lotMode||d.lot_mode||'—'); setEl('kv-preset', preset);
   setEl('kv-wkl', wkl+' / 3');
   setV2('kv-csv', d.csv_on?'RECORDING':'OFF', d.csv_on?'pos':'');
   // Footer
@@ -722,12 +722,15 @@ function renderAccount(d) {
 function buildDNA(dna, wins, losses, lon, ny) {
   const div=document.getElementById('dna'); if(!div) return;
   div.innerHTML='';
-  const str=String(dna||'');
+  const dnaStr=String(dna||'');
+  const chars=dnaStr.trim().includes(' ')?dnaStr.trim().split(/\s+/):dnaStr.split('');
   for(let i=0;i<10;i++){
-    const ch=str[i]||'.', isLast=i===str.length-1&&str.length>0;
+    const ch=(chars[i]||'-').toUpperCase();
+    const isLast=i===chars.length-1&&chars.length>0;
     const chip=document.createElement('div');
     let cls='NA',txt='·';
-    if(ch==='B'){cls='BW';txt='B+';}else if(ch==='S'){cls='SW';txt='S+';}
+    if(ch==='W'){cls='BW';txt='W';}else if(ch==='L'){cls='BL';txt='L';}
+    else if(ch==='B'){cls='BW';txt='B+';}else if(ch==='S'){cls='SW';txt='S+';}
     else if(ch==='b'){cls='BL';txt='B−';}else if(ch==='s'){cls='SL';txt='S−';}
     chip.className='dchip '+cls+(isLast?' cur':'');
     chip.textContent=txt; div.appendChild(chip);
@@ -750,7 +753,7 @@ function buildMart(level, max, lot) {
     div.appendChild(bar);
   }
   setEl('mart-lvl', level+' / '+max);
-  setEl('mart-lot', lot.toFixed(2));
+  setEl('mart-lot', lot>0?lot.toFixed(2):'—');
   setEl('mart-stat', level>0?'ACTIVE — RECOVERING':'—');
 }
 
@@ -796,12 +799,15 @@ function buildTrades(list) {
   div.innerHTML='';
   list.slice(-8).reverse().forEach(t=>{
     const pnl=parseFloat(t.pnl||t.profit||t.PnL||0);
-    const dir=(t.dir||t.direction||t.Dir||'').toUpperCase();
+    const dirRaw=(t.dir||t.direction||t.Dir||'').toUpperCase();
+    // Handle W/L format from EA
+    const dir=dirRaw==='W'?'WIN':dirRaw==='L'?'LOSS':dirRaw;
+    const isSell=(dirRaw==='L'||dirRaw==='SELL');
     const strat=t.strategy||t.strat||'—';
     const lot=parseFloat(t.lot||t.Lot||0);
     const row=document.createElement('div');
     row.className='trade';
-    row.innerHTML=`<span class="tbadge ${dir==='SELL'?'sell':'buy'}">${dir}</span><span class="tstrat">${strat}</span><span style="font-size:9px;color:var(--muted);">${lot.toFixed(2)}L</span><span class="tpnl ${pnl>=0?'pos':'neg'}">${fmtPnl(pnl)}</span>`;
+    row.innerHTML=`<span class="tbadge ${isSell?'sell':'buy'}">${dir}</span><span class="tstrat">${strat}</span><span style="font-size:9px;color:var(--muted);">${lot.toFixed(2)}L</span><span class="tpnl ${pnl>=0?'pos':'neg'}">${fmtPnl(pnl)}</span>`;
     div.appendChild(row);
   });
 }
